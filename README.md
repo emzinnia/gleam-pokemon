@@ -21,7 +21,7 @@ pub type Pokemon {
 }
 ```
 
-#### `get_all() -> Result(List(Pokemon), CsvError)`
+#### `get_all() -> Result(List(Pokemon), PokemonError)`
 
 Returns all Pokémon from the dataset across all languages.
 
@@ -32,7 +32,7 @@ case pokemon.get_all() {
 }
 ```
 
-#### `get_pokemon(id: Int, lang: Language) -> Result(Pokemon, CsvError)`
+#### `get_pokemon(id: Int, lang: Language) -> Result(Pokemon, PokemonError)`
 
 Get a specific Pokémon by species ID and language.
 
@@ -41,11 +41,11 @@ pokemon.get_pokemon(25, pokemon.English)
 // -> Ok(Pokemon(25, 9, "Pikachu", "Mouse Pokémon"))
 ```
 
-#### `get_random() -> Result(Pokemon, CsvError)`
+#### `get_random() -> Result(Pokemon, PokemonError)`
 
 Get a random Pokémon from the entire dataset (any language).
 
-#### `get_random_with_lang(lang: Language) -> Result(Pokemon, CsvError)`
+#### `get_random_with_lang(lang: Language) -> Result(Pokemon, PokemonError)`
 
 Get a random Pokémon in a specific language.
 
@@ -54,16 +54,16 @@ pokemon.get_random_with_lang(pokemon.Japanese)
 // -> Ok(Pokemon(143, 1, "カビゴン", "いねむりポケモン"))
 ```
 
-#### `get_name(id: Int) -> Result(String, CsvError)`
+#### `get_name(id: Int) -> Result(String, PokemonError)`
 
-Get the name of a Pokémon by species ID. Returns the first matching name found (typically Japanese).
+Get the English name of a Pokémon by species ID.
 
 ```gleam
 pokemon.get_name(6)
-// -> Ok("リザードン")
+// -> Ok("Charizard")
 ```
 
-#### `get_name_with_lang(id: Int, lang: Language) -> Result(String, CsvError)`
+#### `get_name_with_lang(id: Int, lang: Language) -> Result(String, PokemonError)`
 
 Get the name of a Pokémon by species ID in a specific language.
 

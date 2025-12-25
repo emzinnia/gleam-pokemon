@@ -15,12 +15,10 @@ pub fn get_all_test() {
       should.be_true(string.length(first.name) > 0)
       should.be_true(string.length(first.genus) > 0)
     }
-    Ok([]) -> {
-      should.be_error(Ok(pokemon.NotFound))
-    }
-    Error(_) -> {
-      should.fail()
-    }
+
+    Ok([]) -> should.fail()
+
+    Error(_) -> should.fail()
   }
 }
 
@@ -47,7 +45,7 @@ pub fn get_random_with_lang_test() {
   case pokemon.get_random_with_lang(pokemon.English) {
     Ok(poke) -> {
       should.be_true(poke.species_id > 0)
-      should.be_true(poke.language_id == pokemon.language_id(pokemon.English))
+      should.be_true(poke.language_id == 9)
       should.be_true(string.length(poke.name) > 0)
       should.be_true(string.length(poke.genus) > 0)
     }
@@ -60,7 +58,7 @@ pub fn get_random_with_lang_test() {
 pub fn get_name_test() {
   case pokemon.get_name(453) {
     Ok(name) -> {
-      should.be_true(name == "グレッグル")
+      should.be_true(name == "Croagunk")
     }
     Error(_) -> {
       should.fail()

@@ -1,3 +1,4 @@
+import gleam/dynamic
 import gleam/erlang/atom
 import gleam/int
 import gleam/io
@@ -7,11 +8,119 @@ import gleam/string
 import gsv
 import simplifile
 
+@external(erlang, "ets", "info")
+fn ets_info(table: atom.Atom, item: atom.Atom) -> dynamic.Dynamic
+
+@external(erlang, "erlang", "is_integer")
+fn is_integer(x: dynamic.Dynamic) -> Bool
+
+@external(erlang, "ets", "new")
+fn ets_new(name: atom.Atom, options: List(atom.Atom)) -> atom.Atom
+
+@external(erlang, "ets", "insert")
+fn ets_insert(table: atom.Atom, object: a) -> Bool
+
+@external(erlang, "ets", "lookup")
+fn ets_lookup(table: atom.Atom, key: k) -> List(a)
+
 @external(erlang, "rand", "seed")
 fn rand_seed(alg: atom.Atom) -> Nil
 
 @external(erlang, "rand", "uniform")
 fn rand_uniform(max: Int) -> Int
+
+const table_by_key = "pokemon_by_key"
+
+const table_all = "pokemon_all"
+
+const table_by_lang = "pokemon_by_lang"
+
+fn table_atom(name: String) -> atom.Atom {
+  atom.create(name)
+}
+
+fn ets_exists(name: atom.Atom) -> Bool {
+  ets_info(name, atom.create("size"))
+  |> is_integer
+}
+
+fn ensure_loaded() -> Result(Nil, PokemonError) {
+  let by_key = table_atom(table_by_key)
+
+  case ets_exists(by_key) {
+    True -> Ok(Nil)
+    False -> {
+      let _ =
+        ets_new(by_key, [
+          atom.create("named_table"),
+          atom.create("set"),
+          atom.create("public"),
+        ])
+
+      let _ =
+        ets_new(table_atom(table_all), [
+          atom.create("named_table"),
+          atom.create("set"),
+          atom.create("public"),
+        ])
+
+      let _ =
+        ets_new(table_atom(table_by_lang), [
+          atom.create("named_table"),
+          atom.create("set"),
+          atom.create("public"),
+        ])
+
+      rand_seed(atom.create("exsplus"))
+
+      get_all_from_csv()
+      |> result.map(fn(all) {
+        populate_tables(all)
+        Nil
+      })
+    }
+  }
+}
+
+fn populate_tables(all: List(Pokemon)) -> Nil {
+  let by_key = table_atom(table_by_key)
+  all
+  |> list.each(fn(p) {
+    let key = #(p.species_id, p.language_id)
+    let _ = ets_insert(by_key, #(key, p))
+    Nil
+  })
+
+  let _ = ets_insert(table_atom(table_all), #(atom.create("all"), all))
+
+  let langs = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+  langs
+  |> list.each(fn(lang_id) {
+    let filtered =
+      all
+      |> list.filter(fn(p) { p.language_id == lang_id })
+    let _ =
+      ets_insert(table_atom(table_by_lang), #(
+        atom.create(int.to_string(lang_id)),
+        filtered,
+      ))
+    Nil
+  })
+}
+
+fn get_all_from_csv() -> Result(List(Pokemon), PokemonError) {
+  case simplifile.read("data/pokemon.csv") {
+    Ok(contents) -> parse_csv(contents)
+    Error(_) -> Error(ReadError)
+  }
+}
+
+fn get_all_from_ets() -> Result(List(Pokemon), PokemonError) {
+  case ets_lookup(table_atom(table_all), atom.create("all")) {
+    [#(_, all)] -> Ok(all)
+    _ -> Error(NotFound)
+  }
+}
 
 pub type PokemonError {
   ReadError
@@ -116,93 +225,78 @@ fn parse_csv(contents: String) -> Result(List(Pokemon), PokemonError) {
 }
 
 pub fn get_all() -> Result(List(Pokemon), PokemonError) {
-  case simplifile.read("data/pokemon.csv") {
-    Ok(contents) -> parse_csv(contents)
-    Error(_) -> Error(ReadError)
-  }
+  ensure_loaded()
+  |> result.try(fn(_) { get_all_from_ets() })
 }
 
 pub fn get_pokemon(id: Int, lang: Language) -> Result(Pokemon, PokemonError) {
-  let lang_id = language_id(lang)
-  get_all()
-  |> result.try(fn(all) {
-    all
-    |> list.find(fn(pokemon) {
-      pokemon.species_id == id && pokemon.language_id == lang_id
-    })
-    |> result.replace_error(NotFound)
-  })
-}
+  ensure_loaded()
+  |> result.try(fn(_) {
+    let lang_id = language_id(lang)
+    let key = #(id, lang_id)
 
-pub fn get_random() -> Result(Pokemon, PokemonError) {
-  get_all()
-  |> result.try(fn(all) {
-    case all {
-      [] -> Error(NotFound)
-      _ -> {
-        rand_seed(atom.create("exsplus"))
-        let idx = rand_uniform(list.length(all)) - 1
-
-        case list.drop(all, idx) {
-          [pokemon, ..] -> Ok(pokemon)
-          _ -> Error(NotFound)
-        }
-      }
+    case ets_lookup(table_atom(table_by_key), key) {
+      [#(_, pokemon)] -> Ok(pokemon)
+      _ -> Error(NotFound)
     }
   })
 }
 
-pub fn get_random_with_lang(lang: Language) -> Result(Pokemon, PokemonError) {
-  get_all()
-  |> result.try(fn(all) {
-    let filtered =
-      list.filter(all, fn(pokemon) { pokemon.language_id == language_id(lang) })
-    case filtered {
-      [] -> Error(NotFound)
-      _ -> {
-        rand_seed(atom.create("exsplus"))
-        let idx = rand_uniform(list.length(filtered)) - 1
-        case list.drop(filtered, idx) {
-          [pokemon, ..] -> Ok(pokemon)
-          _ -> Error(NotFound)
+pub fn get_random() -> Result(Pokemon, PokemonError) {
+  ensure_loaded()
+  |> result.try(fn(_) {
+    get_all_from_ets()
+    |> result.try(fn(all) {
+      case all {
+        [] -> Error(NotFound)
+        _ -> {
+          let idx = rand_uniform(list.length(all)) - 1
+          case list.drop(all, idx) {
+            [pokemon, ..] -> Ok(pokemon)
+            _ -> Error(NotFound)
+          }
         }
       }
+    })
+  })
+}
+
+pub fn get_random_with_lang(lang: Language) -> Result(Pokemon, PokemonError) {
+  ensure_loaded()
+  |> result.try(fn(_) {
+    let lang_id = language_id(lang)
+
+    case
+      ets_lookup(table_atom(table_by_lang), atom.create(int.to_string(lang_id)))
+    {
+      [#(_, filtered)] -> {
+        case filtered {
+          [] -> Error(NotFound)
+          _ -> {
+            let idx = rand_uniform(list.length(filtered)) - 1
+            case list.drop(filtered, idx) {
+              [pokemon, ..] -> Ok(pokemon)
+              _ -> Error(NotFound)
+            }
+          }
+        }
+      }
+      _ -> Error(NotFound)
     }
   })
 }
 
 pub fn get_name(id: Int) -> Result(String, PokemonError) {
-  get_all()
-  |> result.try(fn(all) {
-    case all {
-      [] -> Error(NotFound)
-      _ -> {
-        all
-        |> list.find(fn(pokemon) { pokemon.species_id == id })
-        |> result.replace_error(NotFound)
-        |> result.map(fn(pokemon) { pokemon.name })
-      }
-    }
-  })
+  get_pokemon(id, English)
+  |> result.map(fn(pokemon) { pokemon.name })
 }
 
 pub fn get_name_with_lang(
   id: Int,
   lang: Language,
 ) -> Result(String, PokemonError) {
-  get_all()
-  |> result.try(fn(all) {
-    case all {
-      [] -> Error(NotFound)
-      _ -> {
-        all
-        |> list.filter(fn(pokemon) { pokemon.language_id == language_id(lang) })
-        |> list.find(fn(pokemon) { pokemon.species_id == id })
-        |> result.replace_error(NotFound)
-        |> result.map(fn(pokemon) { pokemon.name })
-      }
-    }
-  })
+  get_pokemon(id, lang)
+  |> result.map(fn(pokemon) { pokemon.name })
 }
 
 pub fn main() -> Nil {
