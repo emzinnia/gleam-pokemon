@@ -2,7 +2,6 @@ import gleam/erlang/atom
 import gleam/int
 import gleam/io
 import gleam/list
-import gleam/option
 import gleam/result
 import gleam/string
 import gsv
@@ -34,7 +33,7 @@ pub type Language {
   English
 }
 
-pub fn langauge_id(lang: Language) -> Int {
+pub fn language_id(lang: Language) -> Int {
   case lang {
     Japanese -> 1
     JapaneseRomanized -> 2
@@ -123,7 +122,7 @@ pub fn get_all() -> Result(List(Pokemon), CsvError) {
 }
 
 pub fn get_pokemon(id: Int, lang: Language) -> Result(Pokemon, CsvError) {
-  let lang_id = langauge_id(lang)
+  let lang_id = language_id(lang)
   get_all()
   |> result.try(fn(all) {
     all
@@ -155,21 +154,14 @@ pub fn get_random() -> Result(Pokemon, CsvError) {
 pub fn get_random_with_lang(lang: Language) -> Result(Pokemon, CsvError) {
   get_all()
   |> result.try(fn(all) {
-    case all {
+    let filtered =
+      list.filter(all, fn(pokemon) { pokemon.language_id == language_id(lang) })
+    case filtered {
       [] -> Error(NotFound)
       _ -> {
         rand_seed(atom.create("exsplus"))
-        let idx = rand_uniform(list.length(all)) - 1
-
-        case
-          list.drop(
-            all
-              |> list.filter(fn(pokemon) {
-                pokemon.language_id == langauge_id(lang)
-              }),
-            idx,
-          )
-        {
+        let idx = rand_uniform(list.length(filtered)) - 1
+        case list.drop(filtered, idx) {
           [pokemon, ..] -> Ok(pokemon)
           _ -> Error(NotFound)
         }
@@ -178,12 +170,35 @@ pub fn get_random_with_lang(lang: Language) -> Result(Pokemon, CsvError) {
   })
 }
 
-pub fn get_name() {
-  todo
+pub fn get_name(id: Int) -> Result(String, CsvError) {
+  get_all()
+  |> result.try(fn(all) {
+    case all {
+      [] -> Error(NotFound)
+      _ -> {
+        all
+        |> list.find(fn(pokemon) { pokemon.species_id == id })
+        |> result.replace_error(NotFound)
+        |> result.map(fn(pokemon) { pokemon.name })
+      }
+    }
+  })
 }
 
-pub fn get_name_with_lang() {
-  todo
+pub fn get_name_with_lang(id: Int, lang: Language) -> Result(String, CsvError) {
+  get_all()
+  |> result.try(fn(all) {
+    case all {
+      [] -> Error(NotFound)
+      _ -> {
+        all
+        |> list.filter(fn(pokemon) { pokemon.language_id == language_id(lang) })
+        |> list.find(fn(pokemon) { pokemon.species_id == id })
+        |> result.replace_error(NotFound)
+        |> result.map(fn(pokemon) { pokemon.name })
+      }
+    }
+  })
 }
 
 pub fn main() -> Nil {
