@@ -79,10 +79,9 @@ fn sequence_results(results: List(Result(a, e))) -> Result(List(a), e) {
   |> result.map(list.reverse)
 }
 
-fn parse_header(header: List(String)) -> Result(List(String), PokemonError) {
+fn parse_header(header: List(String)) -> Result(Nil, PokemonError) {
   case header {
-    ["pokemon_species_id", "local_language_id", "name", "genus"] -> Ok([])
-    [name, ..rest] -> Ok([name, ..rest])
+    ["pokemon_species_id", "local_language_id", "name", "genus"] -> Ok(Nil)
     _ -> Error(ParseError)
   }
 }
@@ -104,7 +103,7 @@ fn rows_to_pokemon(
     [header, ..data_rows] -> {
       case parse_header(header) {
         Error(e) -> Error(e)
-        Ok(langs) -> data_rows_to_pokemon(data_rows, langs)
+        Ok(_) -> data_rows_to_pokemon(data_rows, [])
       }
     }
   }
