@@ -1,6 +1,9 @@
 name = "pokemon"
 version = "1.0.0"
 
+description = "Get Pokémon names"
+licenses = ["MIT"]
+
 [targets]
 erlang = true
 
