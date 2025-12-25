@@ -18,7 +18,7 @@ pub fn get_all_test() {
     Ok([]) -> {
       should.be_error(Ok(pokemon.NotFound))
     }
-    Error(e) -> {
+    Error(_) -> {
       should.fail()
     }
   }
@@ -37,7 +37,23 @@ pub fn get_random_test() {
       should.be_true(string.length(pokemon.name) > 0)
       should.be_true(string.length(pokemon.genus) > 0)
     }
-    Error(e) -> {
+    Error(_) -> {
+      should.fail()
+    }
+  }
+}
+
+pub fn get_random_with_lang_test() {
+  case pokemon.get_random_with_lang(pokemon.English) {
+    Ok(pokemon) -> {
+      should.be_true(pokemon.species_id > 0)
+      should.be_true(
+        pokemon.language_id == pokemon.langauge_id(pokemon.English),
+      )
+      should.be_true(string.length(pokemon.name) > 0)
+      should.be_true(string.length(pokemon.genus) > 0)
+    }
+    Error(_) -> {
       should.fail()
     }
   }

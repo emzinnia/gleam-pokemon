@@ -34,7 +34,7 @@ pub type Language {
   English
 }
 
-fn langauge_id(lang: Language) -> Int {
+pub fn langauge_id(lang: Language) -> Int {
   case lang {
     Japanese -> 1
     JapaneseRomanized -> 2
@@ -152,8 +152,30 @@ pub fn get_random() -> Result(Pokemon, CsvError) {
   })
 }
 
-pub fn get_random_with_lang() {
-  todo
+pub fn get_random_with_lang(lang: Language) -> Result(Pokemon, CsvError) {
+  get_all()
+  |> result.try(fn(all) {
+    case all {
+      [] -> Error(NotFound)
+      _ -> {
+        rand_seed(atom.create("exsplus"))
+        let idx = rand_uniform(list.length(all)) - 1
+
+        case
+          list.drop(
+            all
+              |> list.filter(fn(pokemon) {
+                pokemon.language_id == langauge_id(lang)
+              }),
+            idx,
+          )
+        {
+          [pokemon, ..] -> Ok(pokemon)
+          _ -> Error(NotFound)
+        }
+      }
+    }
+  })
 }
 
 pub fn get_name() {
