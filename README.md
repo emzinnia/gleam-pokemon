@@ -5,22 +5,24 @@ Based off a previous [Rust package](https://github.com/emzinnia/pokemon) I wrote
 [![Package Version](https://img.shields.io/hexpm/v/pokemon)](https://hex.pm/packages/pokemon)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/pokemon/)
 
+### Installation
+
 ```sh
 gleam add pokemon@1
 ```
-```gleam
-import pokemon
 
-pub fn main() -> Nil {
-  // TODO: An example of the project in use
-}
-```
+### API
 
-Further documentation can be found at <https://hexdocs.pm/pokemon>.
+Pokémon contain the following properties
 
-## Development
+pokemon.get_all()
 
-```sh
-gleam run   # Run the project
-gleam test  # Run the tests
-```
+pokemon.get_pokemon(id, lang)
+
+pokemon.get_random()
+
+pokemon.get_random_with_lang(lang)
+
+pokemon.get_name(id)
+
+pokemon.get_name_with_lang(id, lang)
