@@ -13,7 +13,7 @@ fn rand_seed(alg: atom.Atom) -> Nil
 @external(erlang, "rand", "uniform")
 fn rand_uniform(max: Int) -> Int
 
-pub type CsvError {
+pub type PokemonError {
   ReadError
   ParseError
   InvalidRow
@@ -54,7 +54,7 @@ pub type Pokemon {
 fn row_to_pokemon(
   row: List(String),
   _langs: List(String),
-) -> Result(Pokemon, CsvError) {
+) -> Result(Pokemon, PokemonError) {
   case row {
     [species_id_str, lang_id_str, name, genus] -> {
       case int.parse(species_id_str), int.parse(lang_id_str) {
@@ -79,7 +79,7 @@ fn sequence_results(results: List(Result(a, e))) -> Result(List(a), e) {
   |> result.map(list.reverse)
 }
 
-fn parse_header(header: List(String)) -> Result(List(String), CsvError) {
+fn parse_header(header: List(String)) -> Result(List(String), PokemonError) {
   case header {
     ["pokemon_species_id", "local_language_id", "name", "genus"] -> Ok([])
     [name, ..rest] -> Ok([name, ..rest])
@@ -90,13 +90,15 @@ fn parse_header(header: List(String)) -> Result(List(String), CsvError) {
 fn data_rows_to_pokemon(
   data_rows: List(List(String)),
   langs: List(String),
-) -> Result(List(Pokemon), CsvError) {
+) -> Result(List(Pokemon), PokemonError) {
   data_rows
   |> list.map(fn(row) { row_to_pokemon(row, langs) })
   |> sequence_results
 }
 
-fn rows_to_pokemon(rows: List(List(String))) -> Result(List(Pokemon), CsvError) {
+fn rows_to_pokemon(
+  rows: List(List(String)),
+) -> Result(List(Pokemon), PokemonError) {
   case rows {
     [] -> Ok([])
     [header, ..data_rows] -> {
@@ -108,20 +110,20 @@ fn rows_to_pokemon(rows: List(List(String))) -> Result(List(Pokemon), CsvError) 
   }
 }
 
-fn parse_csv(contents: String) -> Result(List(Pokemon), CsvError) {
+fn parse_csv(contents: String) -> Result(List(Pokemon), PokemonError) {
   gsv.to_lists(contents, ",")
   |> result.map_error(fn(_) { ParseError })
   |> result.try(rows_to_pokemon)
 }
 
-pub fn get_all() -> Result(List(Pokemon), CsvError) {
+pub fn get_all() -> Result(List(Pokemon), PokemonError) {
   case simplifile.read("data/pokemon.csv") {
     Ok(contents) -> parse_csv(contents)
     Error(_) -> Error(ReadError)
   }
 }
 
-pub fn get_pokemon(id: Int, lang: Language) -> Result(Pokemon, CsvError) {
+pub fn get_pokemon(id: Int, lang: Language) -> Result(Pokemon, PokemonError) {
   let lang_id = language_id(lang)
   get_all()
   |> result.try(fn(all) {
@@ -133,7 +135,7 @@ pub fn get_pokemon(id: Int, lang: Language) -> Result(Pokemon, CsvError) {
   })
 }
 
-pub fn get_random() -> Result(Pokemon, CsvError) {
+pub fn get_random() -> Result(Pokemon, PokemonError) {
   get_all()
   |> result.try(fn(all) {
     case all {
@@ -151,7 +153,7 @@ pub fn get_random() -> Result(Pokemon, CsvError) {
   })
 }
 
-pub fn get_random_with_lang(lang: Language) -> Result(Pokemon, CsvError) {
+pub fn get_random_with_lang(lang: Language) -> Result(Pokemon, PokemonError) {
   get_all()
   |> result.try(fn(all) {
     let filtered =
@@ -170,7 +172,7 @@ pub fn get_random_with_lang(lang: Language) -> Result(Pokemon, CsvError) {
   })
 }
 
-pub fn get_name(id: Int) -> Result(String, CsvError) {
+pub fn get_name(id: Int) -> Result(String, PokemonError) {
   get_all()
   |> result.try(fn(all) {
     case all {
@@ -185,7 +187,10 @@ pub fn get_name(id: Int) -> Result(String, CsvError) {
   })
 }
 
-pub fn get_name_with_lang(id: Int, lang: Language) -> Result(String, CsvError) {
+pub fn get_name_with_lang(
+  id: Int,
+  lang: Language,
+) -> Result(String, PokemonError) {
   get_all()
   |> result.try(fn(all) {
     case all {
