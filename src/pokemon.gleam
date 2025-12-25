@@ -1,41 +1,90 @@
+import gleam/erlang/atom
+import gleam/int
 import gleam/io
 import gleam/list
+import gleam/option
 import gleam/result
 import gleam/string
 import gsv
 import simplifile
 
+@external(erlang, "rand", "seed")
+fn rand_seed(alg: atom.Atom) -> Nil
+
+@external(erlang, "rand", "uniform")
+fn rand_uniform(max: Int) -> Int
+
 pub type CsvError {
   ReadError
   ParseError
+  InvalidRow
+  InvalidInt
+  NotFound
+}
+
+pub type Language {
+  Japanese
+  JapaneseRomanized
+  Korean
+  Chinese
+  French
+  German
+  Spanish
+  Italian
+  English
+}
+
+fn langauge_id(lang: Language) -> Int {
+  case lang {
+    Japanese -> 1
+    JapaneseRomanized -> 2
+    Korean -> 3
+    Chinese -> 4
+    French -> 5
+    German -> 6
+    Spanish -> 7
+    Italian -> 8
+    English -> 9
+  }
 }
 
 pub type Pokemon {
-  Pokemon(
-    pokemon_species_id: Int,
-    local_language_id: Int,
-    name: String,
-    genus: String,
-  )
+  Pokemon(species_id: Int, language_id: Int, name: String, genus: String)
 }
 
-pub fn row_to_pokemon(
+fn row_to_pokemon(
   row: List(String),
-  langs: List(String),
+  _langs: List(String),
 ) -> Result(Pokemon, CsvError) {
-  // TODO: implement stub
-  Ok(Pokemon(0, 0, "", ""))
+  case row {
+    [species_id_str, lang_id_str, name, genus] -> {
+      case int.parse(species_id_str), int.parse(lang_id_str) {
+        Ok(species_id), Ok(local_language_id) ->
+          Ok(Pokemon(species_id, local_language_id, name, genus))
+
+        _, _ -> Error(InvalidInt)
+      }
+    }
+    _ -> Error(InvalidRow)
+  }
 }
 
-pub fn sequence_results(results: List(Result(a, e))) -> Result(List(a), e) {
-  // TODO: implement sequence_results
-  Ok([])
+fn sequence_results(results: List(Result(a, e))) -> Result(List(a), e) {
+  list.fold(results, Ok([]), fn(acc, next) {
+    case acc, next {
+      Ok(xs), Ok(x) -> Ok([x, ..xs])
+      Error(e), _ -> Error(e)
+      _, Error(e) -> Error(e)
+    }
+  })
+  |> result.map(list.reverse)
 }
 
 fn parse_header(header: List(String)) -> Result(List(String), CsvError) {
   case header {
-    [] -> Ok([])
+    ["pokemon_species_id", "local_language_id", "name", "genus"] -> Ok([])
     [name, ..rest] -> Ok([name, ..rest])
+    _ -> Error(ParseError)
   }
 }
 
@@ -48,9 +97,7 @@ fn data_rows_to_pokemon(
   |> sequence_results
 }
 
-pub fn rows_to_pokemon(
-  rows: List(List(String)),
-) -> Result(List(Pokemon), CsvError) {
+fn rows_to_pokemon(rows: List(List(String))) -> Result(List(Pokemon), CsvError) {
   case rows {
     [] -> Ok([])
     [header, ..data_rows] -> {
@@ -62,7 +109,7 @@ pub fn rows_to_pokemon(
   }
 }
 
-pub fn parse_csv(contents: String) -> Result(List(Pokemon), CsvError) {
+fn parse_csv(contents: String) -> Result(List(Pokemon), CsvError) {
   gsv.to_lists(contents, ",")
   |> result.map_error(fn(_) { ParseError })
   |> result.try(rows_to_pokemon)
@@ -73,6 +120,48 @@ pub fn get_all() -> Result(List(Pokemon), CsvError) {
     Ok(contents) -> parse_csv(contents)
     Error(_) -> Error(ReadError)
   }
+}
+
+pub fn get_pokemon(id: Int, lang: Language) -> Result(Pokemon, CsvError) {
+  let lang_id = langauge_id(lang)
+  get_all()
+  |> result.try(fn(all) {
+    all
+    |> list.find(fn(pokemon) {
+      pokemon.species_id == id && pokemon.language_id == lang_id
+    })
+    |> result.replace_error(NotFound)
+  })
+}
+
+pub fn get_random() -> Result(Pokemon, CsvError) {
+  get_all()
+  |> result.try(fn(all) {
+    case all {
+      [] -> Error(NotFound)
+      _ -> {
+        rand_seed(atom.create("exsplus"))
+        let idx = rand_uniform(list.length(all)) - 1
+
+        case list.drop(all, idx) {
+          [pokemon, ..] -> Ok(pokemon)
+          _ -> Error(NotFound)
+        }
+      }
+    }
+  })
+}
+
+pub fn get_random_with_lang() {
+  todo
+}
+
+pub fn get_name() {
+  todo
+}
+
+pub fn get_name_with_lang() {
+  todo
 }
 
 pub fn main() -> Nil {
