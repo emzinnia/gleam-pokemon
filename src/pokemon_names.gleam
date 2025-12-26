@@ -1,4 +1,5 @@
 import gleam/dynamic
+import gleam/erlang/application
 import gleam/erlang/atom
 import gleam/int
 import gleam/io
@@ -109,9 +110,15 @@ fn populate_tables(all: List(Pokemon)) -> Nil {
 }
 
 fn get_all_from_csv() -> Result(List(Pokemon), PokemonError) {
-  case simplifile.read("data/pokemon.csv") {
-    Ok(contents) -> parse_csv(contents)
+  case application.priv_directory("pokemon_names") {
     Error(_) -> Error(ReadError)
+    Ok(priv_dir) -> {
+      let path = priv_dir <> "/pokemon.csv"
+      case simplifile.read(path) {
+        Ok(contents) -> parse_csv(contents)
+        Error(_) -> Error(ReadError)
+      }
+    }
   }
 }
 
