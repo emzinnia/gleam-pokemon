@@ -1,14 +1,19 @@
-# pokemon
+# pokémon
+
+<img src="./media/premier.png" alt="Pokémon Premier Ball" /> [![Package Version](https://img.shields.io/hexpm/v/pokemon_names)](https://hex.pm/packages/pokemon_names) [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/pokemon_names/)
 
 Based off a previous [Rust package](https://github.com/emzinnia/pokemon) I wrote, which itself is based off an [npm package](https://github.com/sindresorhus/pokemon) by Sindre Sorhous. 
 
-[![Package Version](https://img.shields.io/hexpm/v/pokemon_names)](https://hex.pm/packages/pokemon_names)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/pokemon_names/)
+
 
 ### Installation
 
 ```sh
 gleam add pokemon_names@1
+```
+
+```gleam
+import pokemon_names
 ```
 
 ### API
@@ -26,7 +31,7 @@ pub type Pokemon {
 Returns all Pokémon from the dataset across all languages.
 
 ```gleam
-case pokemon.get_all() {
+case pokemon_names.get_all() {
   Ok(all) -> io.println("Loaded " <> int.to_string(list.length(all)) <> " Pokémon")
   Error(_) -> io.println("Failed to load data")
 }
@@ -37,7 +42,7 @@ case pokemon.get_all() {
 Get a specific Pokémon by species ID and language.
 
 ```gleam
-pokemon.get_pokemon(25, pokemon.English)
+pokemon_names.get_pokemon(25, pokemon_names.English)
 // -> Ok(Pokemon(25, 9, "Pikachu", "Mouse Pokémon"))
 ```
 
@@ -50,7 +55,7 @@ Get a random Pokémon from the entire dataset (any language).
 Get a random Pokémon in a specific language.
 
 ```gleam
-pokemon.get_random_with_lang(pokemon.Japanese)
+pokemon_names.get_random_with_lang(pokemon_names.Japanese)
 // -> Ok(Pokemon(143, 1, "カビゴン", "いねむりポケモン"))
 ```
 
@@ -59,7 +64,7 @@ pokemon.get_random_with_lang(pokemon.Japanese)
 Get the English name of a Pokémon by species ID.
 
 ```gleam
-pokemon.get_name(6)
+pokemon_names.get_name(6)
 // -> Ok("Charizard")
 ```
 
@@ -68,7 +73,7 @@ pokemon.get_name(6)
 Get the name of a Pokémon by species ID in a specific language.
 
 ```gleam
-pokemon.get_name_with_lang(6, pokemon.English)
+pokemon_names.get_name_with_lang(6, pokemon_names.English)
 // -> Ok("Charizard")
 ```
 
