@@ -8,7 +8,7 @@ Based off a previous [Rust package](https://github.com/emzinnia/pokemon) I wrote
 ### Installation
 
 ```sh
-gleam add pokemon@1
+gleam add pokemon_names@1
 ```
 
 ### API
