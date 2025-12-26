@@ -1,4 +1,4 @@
-name = "gleam_pokemon"
+name = "pokemon_names"
 version = "1.0.0"
 
 description = "Get Pokémon names"
