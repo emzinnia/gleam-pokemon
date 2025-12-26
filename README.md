@@ -2,8 +2,8 @@
 
 Based off a previous [Rust package](https://github.com/emzinnia/pokemon) I wrote, which itself is based off an [npm package](https://github.com/sindresorhus/pokemon) by Sindre Sorhous. 
 
-[![Package Version](https://img.shields.io/hexpm/v/pokemon)](https://hex.pm/packages/pokemon)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/pokemon/)
+[![Package Version](https://img.shields.io/hexpm/v/pokemon_names)](https://hex.pm/packages/pokemon_names)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/pokemon_names/)
 
 ### Installation
 
