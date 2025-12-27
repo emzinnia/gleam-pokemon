@@ -1,8 +1,9 @@
 name = "pokemon_names"
-version = "1.0.4"
+version = "1.0.6"
 
 description = "Get Pokémon names"
 licenses = ["MIT"]
+repository = { type = "github", user = "emzinnia", repo = "gleam-pokemon" }
 
 [targets]
 erlang = true

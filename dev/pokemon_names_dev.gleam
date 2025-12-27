@@ -29,5 +29,6 @@ pub fn main() {
 pub const pokemon: List(Pokemon) = [
   " <> elements <> ",
 ]"
-  let assert Ok(_) = simplifile.write("src/internal/pokemon_gen.gleam", code)
+  let assert Ok(_) =
+    simplifile.write("src/pokemon_names/internal/pokemon_gen.gleam", code)
 }

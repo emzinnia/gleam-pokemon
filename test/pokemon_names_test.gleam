@@ -1,8 +1,8 @@
 import gleam/string
 import gleeunit
 import gleeunit/should
-import internal/pokemon_gen.{Pokemon}
 import pokemon_names
+import pokemon_names/internal/pokemon_gen.{Pokemon}
 
 pub fn main() -> Nil {
   gleeunit.main()

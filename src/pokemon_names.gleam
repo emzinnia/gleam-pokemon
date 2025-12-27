@@ -1,7 +1,7 @@
 import gleam/int
 import gleam/io
 import gleam/list
-import internal/pokemon_gen
+import pokemon_names/internal/pokemon_gen
 
 pub type Pokemon =
   pokemon_gen.Pokemon
