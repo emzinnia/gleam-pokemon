@@ -1,6 +1,7 @@
 import gleam/string
 import gleeunit
 import gleeunit/should
+import internal/pokemon_gen.{Pokemon}
 import pokemon_names
 
 pub fn main() -> Nil {
@@ -9,22 +10,20 @@ pub fn main() -> Nil {
 
 pub fn get_all_test() {
   case pokemon_names.get_all() {
-    Ok([first, ..]) -> {
+    [first, ..] -> {
       should.be_true(first.species_id > 0)
       should.be_true(first.language_id > 0)
       should.be_true(string.length(first.name) > 0)
       should.be_true(string.length(first.genus) > 0)
     }
 
-    Ok([]) -> should.fail()
-
-    Error(_) -> should.fail()
+    [] -> should.fail()
   }
 }
 
 pub fn get_pokemon_test() {
   let pokemon = pokemon_names.get_pokemon(1, pokemon_names.English)
-  assert pokemon == Ok(pokemon_names.Pokemon(1, 9, "Bulbasaur", "Seed Pokémon"))
+  assert pokemon == Ok(Pokemon(1, 9, "Bulbasaur", "Seed Pokémon"))
 }
 
 pub fn get_random_test() {
