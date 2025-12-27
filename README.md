@@ -116,5 +116,5 @@ pub type PokemonError {
 Run the codegen
 
 ```bash
-gleam run -m pokemon_names_codegen
+gleam run -m internal/pokemon_names_codegen
 ```
