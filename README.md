@@ -97,24 +97,10 @@ pub type Language {
 }
 ```
 
-#### Errors
-
-Possible errors returned by the API:
-
-```gleam
-pub type PokemonError {
-  ReadError   // Failed to read the CSV file
-  ParseError  // Failed to parse CSV format
-  InvalidRow  // Row has unexpected structure
-  InvalidInt  // Failed to parse species/language ID
-  NotFound    // Pokémon not found
-}
-```
-
 ### Development
 
 Run the codegen
 
 ```bash
-gleam run -m internal/pokemon_names_codegen
+gleam dev
 ```

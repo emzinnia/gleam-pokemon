@@ -7,10 +7,6 @@ import pokemon_names/internal/pokemon_gen
 pub type Pokemon =
   pokemon_gen.Pokemon
 
-pub type PokemonError {
-  NotFound
-}
-
 pub type Language {
   Japanese
   JapaneseRomanized
@@ -47,48 +43,45 @@ pub fn get_all_with_lang(lang: Language) -> List(Pokemon) {
   |> list.filter(fn(p) { p.language_id == lang_id })
 }
 
-pub fn get_pokemon(id: Int, lang: Language) -> Result(Pokemon, PokemonError) {
+pub fn get_pokemon(id: Int, lang: Language) -> Result(Pokemon, Nil) {
   let lang_id = language_id(lang)
   pokemon_gen.pokemon
   |> list.find(fn(p) { p.species_id == id && p.language_id == lang_id })
-  |> result.replace_error(NotFound)
+  |> result.replace_error(Nil)
 }
 
-pub fn get_random() -> Result(Pokemon, PokemonError) {
+pub fn get_random() -> Result(Pokemon, Nil) {
   let all = pokemon_gen.pokemon
   case list.length(all) {
-    0 -> Error(NotFound)
+    0 -> Error(Nil)
     len -> {
       let idx = int.random(len)
       list.drop(all, idx)
       |> list.first
-      |> result.replace_error(NotFound)
+      |> result.replace_error(Nil)
     }
   }
 }
 
-pub fn get_random_with_lang(lang: Language) -> Result(Pokemon, PokemonError) {
+pub fn get_random_with_lang(lang: Language) -> Result(Pokemon, Nil) {
   let filtered = get_all_with_lang(lang)
   case list.length(filtered) {
-    0 -> Error(NotFound)
+    0 -> Error(Nil)
     len -> {
       let idx = int.random(len)
       list.drop(filtered, idx)
       |> list.first
-      |> result.replace_error(NotFound)
+      |> result.replace_error(Nil)
     }
   }
 }
 
-pub fn get_name(id: Int) -> Result(String, PokemonError) {
+pub fn get_name(id: Int) -> Result(String, Nil) {
   get_pokemon(id, English)
   |> result.map(fn(pokemon) { pokemon.name })
 }
 
-pub fn get_name_with_lang(
-  id: Int,
-  lang: Language,
-) -> Result(String, PokemonError) {
+pub fn get_name_with_lang(id: Int, lang: Language) -> Result(String, Nil) {
   get_pokemon(id, lang)
   |> result.map(fn(pokemon) { pokemon.name })
 }
