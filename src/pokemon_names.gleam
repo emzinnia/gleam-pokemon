@@ -1,6 +1,7 @@
 import gleam/int
 import gleam/io
 import gleam/list
+import gleam/result
 import pokemon_names/internal/pokemon_gen
 
 pub type Pokemon =
@@ -50,7 +51,7 @@ pub fn get_pokemon(id: Int, lang: Language) -> Result(Pokemon, PokemonError) {
   let lang_id = language_id(lang)
   pokemon_gen.pokemon
   |> list.find(fn(p) { p.species_id == id && p.language_id == lang_id })
-  |> replace_error(NotFound)
+  |> result.replace_error(NotFound)
 }
 
 pub fn get_random() -> Result(Pokemon, PokemonError) {
@@ -61,7 +62,7 @@ pub fn get_random() -> Result(Pokemon, PokemonError) {
       let idx = int.random(len)
       list.drop(all, idx)
       |> list.first
-      |> replace_error(NotFound)
+      |> result.replace_error(NotFound)
     }
   }
 }
@@ -74,14 +75,14 @@ pub fn get_random_with_lang(lang: Language) -> Result(Pokemon, PokemonError) {
       let idx = int.random(len)
       list.drop(filtered, idx)
       |> list.first
-      |> replace_error(NotFound)
+      |> result.replace_error(NotFound)
     }
   }
 }
 
 pub fn get_name(id: Int) -> Result(String, PokemonError) {
   get_pokemon(id, English)
-  |> result_map(fn(pokemon) { pokemon.name })
+  |> result.map(fn(pokemon) { pokemon.name })
 }
 
 pub fn get_name_with_lang(
@@ -89,21 +90,7 @@ pub fn get_name_with_lang(
   lang: Language,
 ) -> Result(String, PokemonError) {
   get_pokemon(id, lang)
-  |> result_map(fn(pokemon) { pokemon.name })
-}
-
-fn replace_error(result: Result(a, b), error: c) -> Result(a, c) {
-  case result {
-    Ok(value) -> Ok(value)
-    Error(_) -> Error(error)
-  }
-}
-
-fn result_map(result: Result(a, e), f: fn(a) -> b) -> Result(b, e) {
-  case result {
-    Ok(value) -> Ok(f(value))
-    Error(e) -> Error(e)
-  }
+  |> result.map(fn(pokemon) { pokemon.name })
 }
 
 pub fn main() -> Nil {
