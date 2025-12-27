@@ -1,5 +1,4 @@
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/result
 import pokemon_names/internal/pokemon_gen
@@ -76,11 +75,4 @@ pub fn get_name(id: Int) -> Result(String, Nil) {
 pub fn get_name_with_lang(id: Int, lang: Language) -> Result(String, Nil) {
   get_pokemon(id, lang)
   |> result.map(fn(pokemon) { pokemon.name })
-}
-
-pub fn main() -> Nil {
-  case get_name(25) {
-    Ok(name) -> io.println("Pikachu is: " <> name)
-    Error(_) -> io.println("Not found")
-  }
 }
