@@ -26,18 +26,24 @@ pub type Pokemon {
 }
 ```
 
-#### `get_all() -> Result(List(Pokemon), PokemonError)`
+#### `get_all() -> List(Pokemon)`
 
 Returns all Pokémon from the dataset across all languages.
 
 ```gleam
-case pokemon_names.get_all() {
-  Ok(all) -> io.println("Loaded " <> int.to_string(list.length(all)) <> " Pokémon")
-  Error(_) -> io.println("Failed to load data")
-}
+let all = pokemon_names.get_all()
+io.println("Loaded " <> int.to_string(list.length(all)) <> " Pokémon")
 ```
 
-#### `get_pokemon(id: Int, lang: Language) -> Result(Pokemon, PokemonError)`
+#### `get_all_with_lang(lang: Language) -> List(Pokemon)`
+
+Returns all Pokémon in a specific language.
+
+```gleam
+let english_pokemon = pokemon_names.get_all_with_lang(pokemon_names.English)
+```
+
+#### `get_pokemon(id: Int, lang: Language) -> Result(Pokemon, Nil)`
 
 Get a specific Pokémon by species ID and language.
 
@@ -46,11 +52,11 @@ pokemon_names.get_pokemon(25, pokemon_names.English)
 // -> Ok(Pokemon(25, 9, "Pikachu", "Mouse Pokémon"))
 ```
 
-#### `get_random() -> Result(Pokemon, PokemonError)`
+#### `get_random() -> Result(Pokemon, Nil)`
 
 Get a random Pokémon from the entire dataset (any language).
 
-#### `get_random_with_lang(lang: Language) -> Result(Pokemon, PokemonError)`
+#### `get_random_with_lang(lang: Language) -> Result(Pokemon, Nil)`
 
 Get a random Pokémon in a specific language.
 
@@ -59,7 +65,7 @@ pokemon_names.get_random_with_lang(pokemon_names.Japanese)
 // -> Ok(Pokemon(143, 1, "カビゴン", "いねむりポケモン"))
 ```
 
-#### `get_name(id: Int) -> Result(String, PokemonError)`
+#### `get_name(id: Int) -> Result(String, Nil)`
 
 Get the English name of a Pokémon by species ID.
 
@@ -68,13 +74,22 @@ pokemon_names.get_name(6)
 // -> Ok("Charizard")
 ```
 
-#### `get_name_with_lang(id: Int, lang: Language) -> Result(String, PokemonError)`
+#### `get_name_with_lang(id: Int, lang: Language) -> Result(String, Nil)`
 
 Get the name of a Pokémon by species ID in a specific language.
 
 ```gleam
 pokemon_names.get_name_with_lang(6, pokemon_names.English)
 // -> Ok("Charizard")
+```
+
+#### `language_id(lang: Language) -> Int`
+
+Get the numeric language ID for a language.
+
+```gleam
+pokemon_names.language_id(pokemon_names.English)
+// -> 9
 ```
 
 ### Types
@@ -99,8 +114,8 @@ pub type Language {
 
 ### Development
 
-Run the codegen
+Run the codegen to regenerate embedded Pokémon data:
 
 ```bash
-gleam dev
+gleam run -m pokemon_names_dev
 ```

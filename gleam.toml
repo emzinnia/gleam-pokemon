@@ -1,5 +1,5 @@
 name = "pokemon_names"
-version = "1.0.7"
+version = "1.0.8"
 
 description = "Get Pokémon names"
 licenses = ["MIT"]

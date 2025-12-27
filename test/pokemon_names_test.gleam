@@ -27,16 +27,12 @@ pub fn get_pokemon_test() {
 }
 
 pub fn get_random_test() {
-  case pokemon_names.get_random() {
-    Ok(pokemon) -> {
-      should.be_true(pokemon.species_id > 0)
-      should.be_true(pokemon.language_id > 0)
-      should.be_true(string.length(pokemon.name) > 0)
-      should.be_true(string.length(pokemon.genus) > 0)
-    }
-    Error(_) -> {
-      should.fail()
-    }
+  let random = pokemon_names.get_random()
+  {
+    should.be_true(random.species_id > 0)
+    should.be_true(random.language_id > 0)
+    should.be_true(string.length(random.name) > 0)
+    should.be_true(string.length(random.genus) > 0)
   }
 }
 

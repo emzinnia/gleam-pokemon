@@ -50,17 +50,9 @@ pub fn get_pokemon(id: Int, lang: Language) -> Result(Pokemon, Nil) {
   |> result.replace_error(Nil)
 }
 
-pub fn get_random() -> Result(Pokemon, Nil) {
-  let all = pokemon_gen.pokemon
-  case list.length(all) {
-    0 -> Error(Nil)
-    len -> {
-      let idx = int.random(len)
-      list.drop(all, idx)
-      |> list.first
-      |> result.replace_error(Nil)
-    }
-  }
+pub fn get_random() -> Pokemon {
+  let assert [pokemon] = list.sample(pokemon_gen.pokemon, 1)
+  pokemon
 }
 
 pub fn get_random_with_lang(lang: Language) -> Result(Pokemon, Nil) {
